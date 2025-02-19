@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'database/entities';
-import { JwtModule } from '@nestjs/jwt';
 import { ConfigService, ConfigType } from '@nestjs/config';
-import { JwtStrategy } from './strategy';
-import { AuthConfig } from '../../config';
+import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from '../user/user.module';
-
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { JwtStrategy } from './strategy';
+import { AuthConfig } from '@config';
+import { BusinessProfile } from '@entities';
+import { TypeOrmModule } from '@nestjs/typeorm';
 @Module({
   imports: [
+    TypeOrmModule.forFeature([BusinessProfile]),
     JwtModule.registerAsync({
       global: true,
       inject: [AuthConfig.KEY],
@@ -18,7 +18,7 @@ import { UserModule } from '../user/user.module';
         return {
           secret: configService.jwtSecret,
           signOptions: {
-            expiresIn: parseInt(configService.accessTokenExpiration!, 10),
+            expiresIn: configService.accessTokenExpiration,
           },
         };
       },

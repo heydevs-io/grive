@@ -1,16 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class RequestLoginOtpDto {
-  @IsEmail()
-  @IsNotEmpty()
-  @ApiProperty({
-    example: 'john.doe@example.com',
-  })
-  email: string;
-}
-
-export class VerifyLoginOtpDto {
+export class SignUpDto {
   @IsEmail()
   @IsNotEmpty()
   @ApiProperty({
@@ -21,16 +12,14 @@ export class VerifyLoginOtpDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    example: '111111',
+    example: 'Company Name',
   })
-  otp: string;
-}
+  companyName: string;
 
-export class MessageResponseDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
-    example: 'This is a message',
+    example: 'https://www.example.com',
   })
-  message: string;
+  companyWebsite?: string;
 }

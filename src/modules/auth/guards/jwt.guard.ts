@@ -1,5 +1,5 @@
 import { IS_PUBLIC_KEY } from '@decorators';
-import { SourcingUnauthorizedException } from '@exceptions';
+import { CustomUnauthorizedException } from '@exceptions';
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
@@ -24,10 +24,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   handleRequest(err: any, user: any, info: any): any {
     if (info instanceof jwt.TokenExpiredError) {
-      throw new SourcingUnauthorizedException('Token expired');
+      throw new CustomUnauthorizedException('Token expired');
     }
     if (err || !user) {
-      throw new SourcingUnauthorizedException(
+      throw new CustomUnauthorizedException(
         err?.message ?? 'Unauthorized user',
       );
     }

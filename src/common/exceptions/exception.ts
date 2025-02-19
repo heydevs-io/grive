@@ -34,14 +34,14 @@ type DataError = {
   [key: string]: { [key: string]: string } | null;
 };
 
-export class SourcingBadRequestException extends Exception {
+export class CustomBadRequestException extends Exception {
   constructor(message: string, data?: unknown) {
     super(HttpStatus.BAD_REQUEST, message, data);
   }
 
   static fromValidationErrors(
     errors: ValidationError[],
-  ): SourcingBadRequestException {
+  ): CustomBadRequestException {
     const data: DataError = {};
     const parseErrors = (
       errs: ValidationError[],
@@ -62,35 +62,35 @@ export class SourcingBadRequestException extends Exception {
     };
     parseErrors(errors, data);
 
-    return new SourcingBadRequestException('Validation failed', data);
+    return new CustomBadRequestException('Validation failed', data);
   }
 }
 
-export class SourcingUnauthorizedException extends Exception {
+export class CustomUnauthorizedException extends Exception {
   constructor(message: string, data?: unknown) {
     super(HttpStatus.UNAUTHORIZED, message, data);
   }
 }
 
-export class SourcingForbiddenException extends Exception {
+export class CustomForbiddenException extends Exception {
   constructor(message: string, data?: unknown) {
     super(HttpStatus.FORBIDDEN, message, data);
   }
 }
 
-export class SourcingNotFoundException extends Exception {
+export class CustomNotFoundException extends Exception {
   constructor(message: string, data?: unknown) {
     super(HttpStatus.NOT_FOUND, message, data);
   }
 }
 
-export class SourcingNotAcceptableException extends Exception {
+export class CustomNotAcceptableException extends Exception {
   constructor(message: string, data?: unknown) {
     super(HttpStatus.NOT_ACCEPTABLE, message, data);
   }
 }
 
-export class SourcingInternalServerError extends Exception {
+export class CustomInternalServerError extends Exception {
   constructor() {
     super(HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error');
   }

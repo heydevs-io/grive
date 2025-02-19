@@ -32,6 +32,12 @@ class EnvironmentVariables {
 
   @IsString()
   JWT_RESET_PASSWORD_KEY: string;
+
+  @IsString()
+  SUPABASE_URL: string;
+
+  @IsString()
+  SUPABASE_ANON_KEY: string;
 }
 
 export function validate(config: Record<string, unknown>) {

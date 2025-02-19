@@ -6,22 +6,26 @@ import {
   SUPABASE_URL,
 } from '@environments';
 import {
-  SourcingBadRequestException,
-  SourcingInternalServerError,
-  SourcingUnauthorizedException,
+  CustomBadRequestException,
+  CustomInternalServerError,
+  CustomNotFoundException,
+  CustomUnauthorizedException,
 } from '@exceptions';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { plainToInstance } from 'class-transformer';
-import { User } from 'database/entities';
+import { BusinessProfile, User } from 'database/entities';
 import { UserService } from '../user/user.service';
 import {
   AuthToken,
+  MessageResponseDto,
   RequestLoginOtpDto,
-  RequestLoginOtpResponseDto,
   VerifyLoginOtpDto,
 } from './dto';
+import { SignUpDto } from './dto/sign-up.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthService {
@@ -29,35 +33,44 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+
+    @InjectRepository(BusinessProfile)
+    private readonly businessProfileRepository: Repository<BusinessProfile>,
   ) {
     this.supabase = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!);
   }
 
-  async requestLoginOtp(
-    payload: RequestLoginOtpDto,
-  ): Promise<RequestLoginOtpResponseDto> {
-    const { email } = payload;
+  async signUp(payload: SignUpDto) {
+    const { email, companyName, companyWebsite } = payload;
+
     const user = await this.userService.getUserByEmail(email);
-    if (!user) {
-      await this.userService.create({ email });
-    }
+    if (user) throw new CustomBadRequestException('User already exists');
 
-    if (NODE_ENV === 'development' || NODE_ENV === 'local') {
-      return plainToInstance(RequestLoginOtpResponseDto, {
-        message: 'OTP sent to email',
-      });
-    }
+    const newUser = await this.userService.createUser({ email });
 
-    const { data, error } = await this.supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: true,
-      },
+    await this.businessProfileRepository.save({
+      name: companyName,
+      website: companyWebsite,
+      userId: newUser.id,
     });
 
-    if (error) throw new SourcingInternalServerError();
+    await this.sendOtpToEmail(email);
 
-    return plainToInstance(RequestLoginOtpResponseDto, {
+    return plainToInstance(MessageResponseDto, {
+      message: 'OTP sent to email',
+    });
+  }
+
+  async signIn(payload: RequestLoginOtpDto): Promise<MessageResponseDto> {
+    const { email } = payload;
+    const user = await this.userService.getUserByEmail(email);
+    if (!user) throw new CustomNotFoundException('User not found');
+    if (user.status !== UserStatus.ACTIVE)
+      throw new CustomBadRequestException('User is not active');
+
+    await this.sendOtpToEmail(email);
+
+    return plainToInstance(MessageResponseDto, {
       message: 'OTP sent to email',
     });
   }
@@ -66,15 +79,13 @@ export class AuthService {
     const { email, otp } = payload;
     // check if user is active
     const user = await this.userService.getUserByEmail(email);
-    if (!user) throw new SourcingBadRequestException('User not found');
+    if (!user) throw new CustomBadRequestException('User not found');
 
-    await this.userService.updateStatus(user.id, {
-      status: UserStatus.ACTIVE,
-    });
+    await this.userService.updateStatus(user.id, UserStatus.ACTIVE);
 
     if (NODE_ENV === 'development' || NODE_ENV === 'local') {
       if (otp !== DEFAULT_OTP) {
-        throw new SourcingBadRequestException('Invalid OTP');
+        throw new CustomBadRequestException('Invalid OTP');
       }
       return plainToInstance(AuthToken, {
         accessToken: this.generateToken({
@@ -89,7 +100,7 @@ export class AuthService {
       email,
     });
 
-    if (error) throw new SourcingBadRequestException(error.message);
+    if (error) throw new CustomBadRequestException(error.message);
 
     return plainToInstance(AuthToken, {
       accessToken: this.generateToken({
@@ -101,12 +112,12 @@ export class AuthService {
   async validateUserById(userId: string): Promise<User> {
     const user = await this.userService.getUserById(userId);
     if (!user) {
-      throw new SourcingUnauthorizedException('Unauthorized');
+      throw new CustomUnauthorizedException('Unauthorized');
     }
 
     const { status } = user;
     if (status !== UserStatus.ACTIVE) {
-      throw new SourcingUnauthorizedException(
+      throw new CustomUnauthorizedException(
         'Your account is inactive or blocked',
       );
     }
@@ -116,5 +127,20 @@ export class AuthService {
 
   generateToken(payload: any): string {
     return this.jwtService.sign(payload);
+  }
+
+  private async sendOtpToEmail(email: string): Promise<void> {
+    if (NODE_ENV === 'development' || NODE_ENV === 'local') {
+      return;
+    }
+
+    const { data, error } = await this.supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true,
+      },
+    });
+
+    if (error) throw new CustomInternalServerError();
   }
 }

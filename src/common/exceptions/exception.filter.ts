@@ -8,10 +8,7 @@ import {
 import { HttpArgumentsHost } from '@nestjs/common/interfaces/features/arguments-host.interface';
 import { Request, Response } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import {
-  Exception,
-  SourcingInternalServerError,
-} from 'src/common/exception/exception';
+import { Exception, CustomInternalServerError } from './exception';
 import { Logger } from 'winston';
 
 @Catch()
@@ -38,7 +35,7 @@ export class GlobalHandleExceptionFilter implements ExceptionFilter {
       GlobalHandleExceptionFilter.sendResponse(
         request,
         response,
-        new SourcingInternalServerError(),
+        new CustomInternalServerError(),
       );
     }
   }

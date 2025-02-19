@@ -18,15 +18,34 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "paths": {
-      "@entities/*": [
-        "database/entities/*"
+      "@entities": [
+        "database/entities"
       ],
       "@validate": [
         "environments/validation"
       ],
       "@environments": [
         "environments/index"
+      ],
+      "@enums": [
+        "src/common/enums/index"
+      ],
+      "@decorators": [
+        "src/common/decorators/index"
+      ],
+      "@exceptions": [
+        "src/common/exceptions/index"
+      ],
+      "@interfaces": [
+        "src/common/interfaces/index"
+      ],
+      "@config": [
+        "src/config/index"
+      ],
+      "@utils": [
+        "src/common/utils/index"
       ]
     }
   }

@@ -1,10 +1,15 @@
 import { PORT } from '@environments';
-import { Logger, ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import {
+  ClassSerializerInterceptor,
+  Logger,
+  ValidationPipe,
+} from '@nestjs/common';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { AppModule } from './app.module';
+import { CoreTransformInterceptor } from './common/interceptors';
 
 async function bootstrap() {
   initializeTransactionalContext();
@@ -25,6 +30,11 @@ async function bootstrap() {
       transform: true,
       forbidNonWhitelisted: true,
     }),
+  );
+
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(app.get(Reflector), {}),
+    new CoreTransformInterceptor(),
   );
 
   // Swagger

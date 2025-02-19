@@ -3,7 +3,7 @@ import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthConfig } from '@config';
-import { SourcingUnauthorizedException } from '@exceptions';
+import { CustomUnauthorizedException } from '@exceptions';
 import { AuthService } from '../auth.service';
 import { User } from 'database/entities';
 import { AuthPayload } from '@interfaces';
@@ -24,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload: AuthPayload): Promise<User> {
     if (!payload) {
-      throw new SourcingUnauthorizedException('Unauthorized');
+      throw new CustomUnauthorizedException('Unauthorized');
     }
 
     const { id: userId } = payload;
