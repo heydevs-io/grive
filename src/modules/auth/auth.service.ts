@@ -43,16 +43,22 @@ export class AuthService {
   async signUp(payload: SignUpDto) {
     const { email, companyName, companyWebsite } = payload;
 
-    const user = await this.userService.getUserByEmail(email);
-    if (user) throw new CustomBadRequestException('User already exists');
+    let user = await this.userService.getUserByEmail(email);
+    if (user && user.status === UserStatus.ACTIVE)
+      throw new CustomBadRequestException('User already exists');
 
-    const newUser = await this.userService.createUser({ email });
+    if (!user) user = await this.userService.createUser({ email });
 
-    await this.businessProfileRepository.save({
-      name: companyName,
-      website: companyWebsite,
-      userId: newUser.id,
-    });
+    await this.businessProfileRepository.upsert(
+      {
+        name: companyName,
+        website: companyWebsite,
+        userId: user.id,
+      },
+      {
+        conflictPaths: ['userId'],
+      },
+    );
 
     await this.sendOtpToEmail(email);
 
@@ -65,6 +71,7 @@ export class AuthService {
     const { email } = payload;
     const user = await this.userService.getUserByEmail(email);
     if (!user) throw new CustomNotFoundException('User not found');
+
     if (user.status !== UserStatus.ACTIVE)
       throw new CustomBadRequestException('User is not active');
 
@@ -90,7 +97,10 @@ export class AuthService {
       return plainToInstance(AuthToken, {
         accessToken: this.generateToken({
           id: user.id,
+          name: user.name,
+          email: user.email,
         }),
+        onboardingComplete: user.businessProfile?.onboardingComplete || false,
       });
     }
 
@@ -105,7 +115,10 @@ export class AuthService {
     return plainToInstance(AuthToken, {
       accessToken: this.generateToken({
         id: user.id,
+        name: user.name,
+        email: user.email,
       }),
+      onboardingComplete: user.businessProfile?.onboardingComplete || false,
     });
   }
 

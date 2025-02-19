@@ -5,6 +5,10 @@ import { Exclude, Expose } from 'class-transformer';
 @Exclude()
 export class BusinessProfileResponseDto {
   @Expose()
+  @ApiProperty({ example: '5e4ce015-172c-4ecb-a264-9be315de0c72' })
+  id: string;
+
+  @Expose()
   @ApiProperty({ example: 'Company Name' })
   name: string;
 
@@ -44,6 +48,7 @@ export class BusinessProfileResponseDto {
   @ApiProperty({
     example: BusinessFocus.BUSINESS_GROWTH_HEALTH,
     enum: BusinessFocus,
+    isArray: true,
   })
-  focus: BusinessFocus;
+  focus: BusinessFocus[];
 }

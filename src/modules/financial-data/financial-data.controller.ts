@@ -1,10 +1,14 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { FinancialDataService } from './financial-data.service';
-import { ImportFinancialDataDto } from './dto/financial-data.dto';
 import { CurrentUser } from '@decorators';
 import { User } from '@entities';
-import { JwtAuthGuard } from '../auth/guards';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards';
+import {
+  FinancialDataDto,
+  ImportFinancialDataDto,
+  FinancialDataOptionsDto,
+} from './dto';
+import { FinancialDataService } from './financial-data.service';
 
 @Controller('financial-data')
 @UseGuards(JwtAuthGuard)
@@ -21,5 +25,13 @@ export class FinancialDataController {
       payload.financialData,
       user.id,
     );
+  }
+
+  @Get('own')
+  get(
+    @CurrentUser() user: User,
+    @Query() financialDataOptions: FinancialDataOptionsDto,
+  ): Promise<FinancialDataDto[]> {
+    return this.financialDataService.get(user.id, financialDataOptions);
   }
 }

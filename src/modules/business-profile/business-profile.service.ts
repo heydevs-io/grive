@@ -1,7 +1,12 @@
-import { BusinessType } from '@enums';
+import { BusinessType, DateFormat } from '@enums';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getAllSicCodes, getSicCodesByCategory, getSicCodeTitle } from '@utils';
+import {
+  DateJS,
+  getAllSicCodes,
+  getSicCodesByCategory,
+  getSicCodeTitle,
+} from '@utils';
 import { Repository } from 'typeorm';
 import {
   CreateBusinessProfileDto,
@@ -23,7 +28,7 @@ export class BusinessProfileService {
   ) {}
 
   async getIndustries(category?: BusinessType) {
-    if (!category) {
+    if (!category || category === BusinessType.OTHER) {
       return getAllSicCodes();
     }
     return getSicCodesByCategory(category);
@@ -55,6 +60,7 @@ export class BusinessProfileService {
     const data: any = {
       ...payload,
       userId,
+      foundedDate: DateJS.format(payload.foundedDate, 'YYYY-MM'),
     };
     if (payload.industrySIC) {
       const industryTitle = getSicCodeTitle(payload.industrySIC);

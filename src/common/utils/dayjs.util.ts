@@ -157,6 +157,9 @@ export const parseSkipLimit = (
 };
 
 export class DateJS {
+  static format(date: ConfigType, format: DateFormat | string) {
+    return dayjs.utc(date).format(format);
+  }
   static isBetween(
     date: ConfigType,
     a: ConfigType,
@@ -167,8 +170,8 @@ export class DateJS {
     return dayjs.utc(date).isBetween(a, b, c, d);
   }
 
-  static utc(date?: ConfigType) {
-    return dayjs.utc(date);
+  static utc(date?: ConfigType, format?: string) {
+    return dayjs.utc(date, format);
   }
   static sameOrBefore(
     date: ConfigType,

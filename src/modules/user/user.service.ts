@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '@entities';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, UserResponseDto } from './dto';
 import { UserStatus } from '@enums';
+import { plainToInstance } from 'class-transformer';
+
 @Injectable()
 export class UserService {
   constructor(
@@ -17,11 +19,18 @@ export class UserService {
   }
 
   async getUserByEmail(email: string) {
-    return await this.userRepository.findOne({ where: { email } });
+    const result = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.businessProfile', 'businessProfile')
+      .where('user.email = :email', { email })
+      .getOne();
+
+    return result;
   }
 
   async getUserById(id: string) {
-    return await this.userRepository.findOne({ where: { id } });
+    const result = await this.userRepository.findOne({ where: { id } });
+    return result;
   }
 
   async updateStatus(id: string, status: UserStatus) {

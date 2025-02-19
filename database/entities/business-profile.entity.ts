@@ -39,8 +39,8 @@ export class BusinessProfile extends BaseEntity {
   @Column({ nullable: true })
   specificService?: string;
 
-  @Column({ nullable: true, type: 'enum', enum: BusinessFocus })
-  focus?: BusinessFocus;
+  @Column({ nullable: true, type: 'enum', enum: BusinessFocus, array: true })
+  focus?: BusinessFocus[];
 
   @Column({ nullable: true, default: false })
   onboardingComplete: boolean;

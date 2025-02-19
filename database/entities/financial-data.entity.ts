@@ -1,10 +1,20 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  Unique,
+} from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { RevenueChannel } from './revenue-channel.entity';
 import { Expense } from './expense.entity';
 
 @Entity()
+@Unique(['userId', 'date'])
 export class FinancialData extends BaseEntity {
   @Column()
   userId: string;
@@ -13,13 +23,13 @@ export class FinancialData extends BaseEntity {
   @ManyToOne(() => User)
   user: User;
 
-  @Column()
+  @Column({ default: 0 })
   totalRevenue: number;
 
-  @Column()
+  @Column({ default: 0 })
   totalExpenses: number;
 
-  @Column()
+  @Column({ default: 0 })
   totalProfit: number;
 
   @Column({ type: 'timestamp' })

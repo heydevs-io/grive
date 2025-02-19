@@ -5,12 +5,20 @@ import {
   IsArray,
   IsDateString,
   IsNumber,
+  IsOptional,
   IsString,
   Max,
   ValidateNested,
 } from 'class-validator';
 
 export class RevenueChannelDto {
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    example: '5e4ce015-172c-4ecb-a264-9be315de0c12',
+  })
+  id: string;
+
   @IsNumber()
   @ApiProperty({
     example: 10000,
@@ -25,6 +33,13 @@ export class RevenueChannelDto {
 }
 
 export class ExpenseDto {
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    example: '5e4ce015-172c-4ecb-a264-9be315de0c73',
+  })
+  id: string;
+
   @IsNumber()
   @ApiProperty({
     example: 10000,
@@ -39,32 +54,22 @@ export class ExpenseDto {
 }
 
 export class FinancialDataDto {
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    example: '5e4ce015-172c-4ecb-a264-9be315de0c72',
+  })
+  id: string;
+
   @IsDateString()
   @ApiProperty({
     example: '2024-01',
   })
   date: Date;
 
-  @IsNumber()
-  @ApiProperty({
-    example: 10000,
-  })
-  totalRevenue: number;
-
-  @IsNumber()
-  @ApiProperty({
-    example: 5000,
-  })
-  totalExpenses: number;
-
-  @IsNumber()
-  @ApiProperty({
-    example: 5000,
-  })
-  totalProfit: number;
-
   @IsArray()
   @ArrayMaxSize(15)
+  @IsOptional()
   @ValidateNested({ each: true })
   @ApiProperty({
     type: [RevenueChannelDto],
@@ -72,6 +77,7 @@ export class FinancialDataDto {
   @Type(() => RevenueChannelDto)
   revenueChannels: RevenueChannelDto[];
 
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @ApiProperty({

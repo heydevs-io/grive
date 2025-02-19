@@ -4,7 +4,6 @@ import { validate } from '@validate';
 import {
   AuthModule,
   BusinessProfileModule,
-  DevModeModule,
   FinancialDataModule,
   UserModule,
 } from './modules';
@@ -19,9 +18,9 @@ import { GlobalHandleExceptionFilter } from './common/exceptions';
 const modules = [
   AuthModule,
   UserModule,
-  DevModeModule.registerAsync(),
   BusinessProfileModule,
   FinancialDataModule,
+  UserModule,
 ];
 @Module({
   imports: [

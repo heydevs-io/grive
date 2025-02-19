@@ -16,4 +16,7 @@ export class User extends BaseEntity {
 
   @OneToOne(() => BusinessProfile, (businessProfile) => businessProfile.user)
   businessProfile: BusinessProfile;
+
+  @Column({ nullable: true })
+  avatar?: string;
 }

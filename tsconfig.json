@@ -46,6 +46,9 @@
       ],
       "@utils": [
         "src/common/utils/index"
+      ],
+      "@dtos": [
+        "src/common/dtos/index"
       ]
     }
   }

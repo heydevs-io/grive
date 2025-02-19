@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { FinancialData } from './financial-data.entity';
 import { BaseEntity } from './base.entity';
+import { ExpenseType } from '../../src/common/enums/expense.enum';
 
 @Entity()
 export class Expense extends BaseEntity {
@@ -10,10 +11,13 @@ export class Expense extends BaseEntity {
   @Column()
   title: string;
 
-  @Column()
+  @Column('uuid')
   financialDataId: string;
 
   @JoinColumn({ name: 'financial_data_id' })
   @ManyToOne(() => FinancialData, (financialData) => financialData.expenses)
   financialData: FinancialData;
+
+  @Column({ type: 'enum', enum: ExpenseType, default: ExpenseType.VARIABLE })
+  type: ExpenseType;
 }
