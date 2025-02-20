@@ -7,3 +7,4 @@ export * from './language.enum';
 export * from './business-profile.enum';
 export * from './user-status.enum';
 export * from './expense.enum';
+export * from './milestone.enum';

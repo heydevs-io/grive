@@ -1,13 +1,13 @@
+import { AuthConfig } from '@config';
+import { BusinessProfile } from '@entities';
 import { Module } from '@nestjs/common';
-import { ConfigService, ConfigType } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategy';
-import { AuthConfig } from '@config';
-import { BusinessProfile } from '@entities';
-import { TypeOrmModule } from '@nestjs/typeorm';
 @Module({
   imports: [
     TypeOrmModule.forFeature([BusinessProfile]),
@@ -29,4 +29,4 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }

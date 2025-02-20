@@ -50,7 +50,7 @@ export class CreateBusinessProfileDto {
   @ApiPropertyOptional({
     example: 'Other business type',
   })
-  @ValidateIf((object, value) => object.businessType === BusinessType.OTHER)
+  @ValidateIf((object) => object.businessType === BusinessType.OTHER)
   businessTypeOther?: string;
 
   @IsString()
@@ -120,7 +120,7 @@ export class UpdateBusinessProfileDto {
   @ApiProperty({
     example: 'Other business type',
   })
-  @ValidateIf((object, value) => object.businessType === BusinessType.OTHER)
+  @ValidateIf((object) => object.businessType === BusinessType.OTHER)
   businessTypeOther?: string;
 
   @IsString()

@@ -15,7 +15,7 @@ import { MessageResponseDto } from '../auth/dto';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
 export class FinancialDataController {
-  constructor(private readonly financialDataService: FinancialDataService) {}
+  constructor(private readonly financialDataService: FinancialDataService) { }
 
   @Post()
   @CustomApiResponse(MessageResponseDto)

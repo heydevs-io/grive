@@ -2,15 +2,15 @@ import { Expense, FinancialData, RevenueChannel } from '@entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateJS } from '@utils';
-import { Between, DataSource, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
+import { CustomBadRequestException } from '../../common/exceptions';
+import { MessageResponseDto } from '../auth/dto';
 import {
   FinancialDataOptionsDto,
   FinancialDataResponseDto,
   ImportFinancialDataDto,
 } from './dto';
-import { CustomBadRequestException } from '../../common/exceptions';
-import { MessageResponseDto } from '../auth/dto';
 
 @Injectable()
 export class FinancialDataService {
@@ -18,7 +18,7 @@ export class FinancialDataService {
     private readonly dataSource: DataSource,
     @InjectRepository(FinancialData)
     private readonly financialDataRepository: Repository<FinancialData>,
-  ) {}
+  ) { }
 
   async get(
     userId: string,

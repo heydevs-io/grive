@@ -1,17 +1,16 @@
+import { User } from '@entities';
+import { UserStatus } from '@enums';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '@entities';
-import { CreateUserDto, UserResponseDto } from './dto';
-import { UserStatus } from '@enums';
-import { plainToInstance } from 'class-transformer';
+import { CreateUserDto } from './dto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async createUser(data: CreateUserDto) {
     const user = this.userRepository.create(data);

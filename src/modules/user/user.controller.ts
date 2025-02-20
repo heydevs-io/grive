@@ -3,15 +3,14 @@ import { User } from '@entities';
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards';
-import { UserService } from './user.service';
 import { UserResponseDto } from './dto';
-import { plainToInstance } from 'class-transformer';
+import { UserService } from './user.service';
 
 @Controller('user')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get('me')
   @CustomApiResponse(UserResponseDto)

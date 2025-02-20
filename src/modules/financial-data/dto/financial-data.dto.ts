@@ -1,3 +1,4 @@
+import { ExpenseType } from '@enums';
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
 import {
@@ -5,11 +6,9 @@ import {
   IsDateString,
   IsEnum,
   IsNumber,
-  IsOptional,
   IsString,
-  ValidateNested,
+  ValidateNested
 } from 'class-validator';
-import { ExpenseType } from '@enums';
 
 export class CreateRevenueChannelDto {
   @IsNumber({}, { each: true })
