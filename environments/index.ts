@@ -18,9 +18,13 @@ export const PORT = process.env.PORT || 3000;
 
 // * JWT
 export const ACCESS_TOKEN_SECRET: string = process.env.ACCESS_TOKEN_SECRET!;
-export const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN;
+export const ACCESS_TOKEN_EXPIRES_IN: number = parseInt(
+  process.env.ACCESS_TOKEN_EXPIRES_IN!,
+);
 export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
-export const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN;
+export const REFRESH_TOKEN_EXPIRES_IN: number = parseInt(
+  process.env.REFRESH_TOKEN_EXPIRES_IN!,
+);
 export const JWT_RESET_PASSWORD_KEY = process.env.JWT_RESET_PASSWORD_KEY;
 
 export const SUPABASE_URL = process.env.SUPABASE_URL;

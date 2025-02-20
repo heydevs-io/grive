@@ -67,13 +67,17 @@ export class CreateBusinessProfileDto {
   })
   specificService?: string;
 
-  @IsEnum(BusinessFocus)
-  @IsOptional()
-  @ApiPropertyOptional({
+  @IsEnum(BusinessFocus, { each: true })
+  @ApiProperty({
     enum: BusinessFocus,
-    example: BusinessFocus.BUSINESS_GROWTH_HEALTH,
+    example: [
+      BusinessFocus.BUSINESS_GROWTH_HEALTH,
+      BusinessFocus.FORECASTING_PLANNING,
+    ],
+    isArray: true,
   })
-  focus?: BusinessFocus;
+  @IsOptional()
+  focus?: BusinessFocus[];
 }
 export class UpdateBusinessProfileDto {
   @IsOptional()
@@ -133,10 +137,14 @@ export class UpdateBusinessProfileDto {
   })
   specificService: string;
 
-  @IsEnum(BusinessFocus)
+  @IsEnum(BusinessFocus, { each: true })
   @ApiProperty({
     enum: BusinessFocus,
-    example: BusinessFocus.BUSINESS_GROWTH_HEALTH,
+    example: [
+      BusinessFocus.BUSINESS_GROWTH_HEALTH,
+      BusinessFocus.FORECASTING_PLANNING,
+    ],
+    isArray: true,
   })
-  focus: BusinessFocus;
+  focus: BusinessFocus[];
 }
