@@ -89,8 +89,7 @@ export class BusinessProfileService {
     const businessProfile = await this.businessProfileRepository.findOne({
       where: { userId },
     });
-    if (!businessProfile || !businessProfile.onboardingComplete)
-      throw new CustomNotFoundException('Business profile not found');
+    if (!businessProfile || !businessProfile.onboardingComplete) return null;
     return plainToInstance(BusinessProfileResponseDto, businessProfile);
   }
 }
