@@ -28,10 +28,15 @@ export class FinancialDataController {
   }
 
   @Get('own')
-  get(
+  getOwnFinancialData(
     @CurrentUser() user: User,
     @Query() financialDataOptions: FinancialDataOptionsDto,
   ): Promise<FinancialDataDto[]> {
     return this.financialDataService.get(user.id, financialDataOptions);
+  }
+
+  @Get('check-exist')
+  checkExistFinancialData(@CurrentUser() user: User) {
+    return this.financialDataService.checkExistFinancialData(user.id);
   }
 }

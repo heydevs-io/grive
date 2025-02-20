@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { CurrentUser, CustomApiResponse } from '../../common/decorators';
+import { CurrentUser, CustomApiResponse } from '@decorators';
 import { JwtAuthGuard } from '../auth/guards';
 import { BusinessProfileService } from './business-profile.service';
 import {
@@ -16,9 +16,9 @@ import {
   IndustryOptionDto,
   IndustryResponseDto,
   UpdateBusinessProfileDto,
+  BusinessProfileResponseDto,
 } from './dto';
-import { User } from '../../../database/entities';
-import { BusinessProfileResponseDto } from './dto/business-profile-response.dto';
+import { User } from '@entities';
 
 @Controller('business-profile')
 @UseGuards(JwtAuthGuard)

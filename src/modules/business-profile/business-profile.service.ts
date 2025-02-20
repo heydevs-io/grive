@@ -11,13 +11,13 @@ import { Repository } from 'typeorm';
 import {
   CreateBusinessProfileDto,
   UpdateBusinessProfileDto,
-} from './dto/create-business-profile.dto';
+  BusinessProfileResponseDto,
+} from './dto';
 import {
   CustomBadRequestException,
   CustomNotFoundException,
 } from '@exceptions';
 import { plainToInstance } from 'class-transformer';
-import { BusinessProfileResponseDto } from './dto';
 import { BusinessProfile } from '@entities';
 
 @Injectable()

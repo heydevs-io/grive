@@ -6,8 +6,8 @@ import {
   MessageResponseDto,
   RequestLoginOtpDto,
   VerifyLoginOtpDto,
+  SignUpDto,
 } from './dto';
-import { SignUpDto } from './dto/sign-up.dto';
 
 @Controller('auth')
 export class AuthController {

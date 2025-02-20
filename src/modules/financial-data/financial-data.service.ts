@@ -1,16 +1,11 @@
 import { Expense, FinancialData, RevenueChannel } from '@entities';
 import { Injectable } from '@nestjs/common';
-import { DataSource, Equal, In, InsertResult, Repository } from 'typeorm';
-import {
-  ExpenseDto,
-  FinancialDataDto,
-  RevenueChannelDto,
-} from './dto/financial-data.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PageDto, PageMetaDto, PageOptionsDto } from '@dtos';
+import { DateJS } from '@utils';
+import { DataSource, Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { FinancialDataOptionsDto } from './dto';
-import { DateJS } from '../../common/utils';
+import { ExpenseDto, FinancialDataDto, RevenueChannelDto } from './dto';
 
 @Injectable()
 export class FinancialDataService {
@@ -27,23 +22,29 @@ export class FinancialDataService {
     const query = this.financialDataRepository
       .createQueryBuilder('financialData')
       .where('financialData.userId = :userId', { userId })
-      .andWhere('financialData.date >= :fromYear', {
-        fromYear: financialDataOptions.fromYear
-          ? new Date(financialDataOptions.fromYear, 0, 1)
-          : undefined,
-      })
-      .andWhere('financialData.date <= :toYear', {
-        toYear: financialDataOptions.toYear
-          ? new Date(financialDataOptions.toYear, 12, 31)
-          : undefined,
-      })
       .leftJoinAndSelect('financialData.revenueChannels', 'revenueChannels')
       .leftJoinAndSelect('financialData.expenses', 'expenses')
-      .orderBy('financialData.date', 'ASC');
+      .orderBy('financialData.date', 'ASC')
+      .andWhere('financialData.date >= :fromYear', {
+        fromYear: new Date(financialDataOptions.fromYear, 0, 1),
+      })
+      .andWhere('financialData.date <= :toYear', {
+        toYear: new Date(financialDataOptions.toYear, 12, 31),
+      });
 
     const result = await query.getMany();
 
     return result;
+  }
+
+  async checkExistFinancialData(userId: string): Promise<boolean> {
+    const result = await this.financialDataRepository.findOne({
+      where: {
+        userId,
+      },
+    });
+
+    return !!result;
   }
 
   async importFinancialData(payload: FinancialDataDto[], userId: string) {

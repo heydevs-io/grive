@@ -51,4 +51,8 @@ export class BusinessProfileResponseDto {
     isArray: true,
   })
   focus: BusinessFocus[];
+
+  @Expose()
+  @ApiProperty({ example: false })
+  onboardingComplete: boolean;
 }

@@ -16,9 +16,6 @@ export class UserController {
   @Get('me')
   @CustomApiResponse(UserResponseDto)
   getMe(@CurrentUser() user: User) {
-    return plainToInstance(
-      UserResponseDto,
-      this.userService.getUserById(user.id),
-    );
+    return this.userService.getUserById(user.id);
   }
 }
