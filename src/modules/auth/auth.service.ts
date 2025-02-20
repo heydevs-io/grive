@@ -13,9 +13,11 @@ import {
 } from '@exceptions';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { plainToInstance } from 'class-transformer';
 import { BusinessProfile, User } from 'database/entities';
+import { Repository } from 'typeorm';
 import { UserService } from '../user/user.service';
 import {
   AuthToken,
@@ -24,8 +26,6 @@ import {
   VerifyLoginOtpDto,
 } from './dto';
 import { SignUpDto } from './dto/sign-up.dto';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthService {
@@ -104,7 +104,7 @@ export class AuthService {
       });
     }
 
-    const { data, error } = await this.supabase.auth.verifyOtp({
+    const { error } = await this.supabase.auth.verifyOtp({
       token: otp,
       type: 'email',
       email,
@@ -147,7 +147,7 @@ export class AuthService {
       return;
     }
 
-    const { data, error } = await this.supabase.auth.signInWithOtp({
+    const { error } = await this.supabase.auth.signInWithOtp({
       email,
       options: {
         shouldCreateUser: true,

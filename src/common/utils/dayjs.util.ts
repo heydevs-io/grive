@@ -15,9 +15,7 @@ dayjs.extend(isBetween);
 export const parseFromJson: any = (str: string) => {
   try {
     return JSON.parse(str);
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.error('\n ==> ERROR [parseFromJson]:', e.message, '\n');
+  } catch {
     return str;
   }
 };
@@ -51,7 +49,7 @@ export const applyMixins = (baseClass: any, extendedClasses: any[]) => {
         baseClass.prototype,
         name,
         Object.getOwnPropertyDescriptor(extendedClass.prototype, name) ||
-          Object.create(null),
+        Object.create(null),
       );
     });
   });
@@ -61,7 +59,7 @@ export const stringifyAnObject = <T>(obj: T): string => {
   let result = '';
   try {
     result = JSON.stringify(obj);
-  } catch (e) {
+  } catch {
     result = JSON.stringify(obj, Object.getOwnPropertyNames(obj));
   }
   return result;

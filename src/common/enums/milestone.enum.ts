@@ -1,0 +1,6 @@
+export enum MilestoneType {
+  CASH_FLOW = 'CASH_FLOW',
+  REVENUE = 'REVENUE',
+  BREAK_EVEN = 'BREAK_EVEN',
+  PROFITABILITY = 'PROFITABILITY',
+}

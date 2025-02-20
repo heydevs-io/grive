@@ -1,6 +1,6 @@
+import { UserStatus } from '@enums';
 import { Column, Entity, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { UserStatus } from '@enums';
 import { BusinessProfile } from './business-profile.entity';
 
 @Entity()

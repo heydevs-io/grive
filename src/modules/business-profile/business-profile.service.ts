@@ -1,4 +1,9 @@
-import { BusinessType, DateFormat } from '@enums';
+import { BusinessProfile } from '@entities';
+import { BusinessType } from '@enums';
+import {
+  CustomBadRequestException,
+  CustomNotFoundException,
+} from '@exceptions';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -7,25 +12,20 @@ import {
   getSicCodesByCategory,
   getSicCodeTitle,
 } from '@utils';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import {
+  BusinessProfileResponseDto,
   CreateBusinessProfileDto,
   UpdateBusinessProfileDto,
-  BusinessProfileResponseDto,
 } from './dto';
-import {
-  CustomBadRequestException,
-  CustomNotFoundException,
-} from '@exceptions';
-import { plainToInstance } from 'class-transformer';
-import { BusinessProfile } from '@entities';
 
 @Injectable()
 export class BusinessProfileService {
   constructor(
     @InjectRepository(BusinessProfile)
     private readonly businessProfileRepository: Repository<BusinessProfile>,
-  ) {}
+  ) { }
 
   async getIndustries(category?: BusinessType) {
     if (!category || category === BusinessType.OTHER) {

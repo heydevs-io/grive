@@ -7,3 +7,7 @@ export * from './language.enum';
 export * from './business-profile.enum';
 export * from './user-status.enum';
 export * from './expense.enum';
+export * from './milestone.enum';
+export * from './asset.enum';
+export * from './liability.enum';
+export * from './scenario.enum';

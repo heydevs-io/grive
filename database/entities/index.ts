@@ -5,3 +5,8 @@ export * from './financial-data.entity';
 export * from './revenue-channel.entity';
 export * from './expense.entity';
 export * from './conversation.entity';
+export * from './plan.entity';
+export * from './asset.entity';
+export * from './liability.entity';
+export * from './scenario.entity';
+export * from './simulation.entity';
