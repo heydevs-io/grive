@@ -1,9 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { FinancialData } from './financial-data.entity';
 import { BaseEntity } from './base.entity';
 import { ExpenseType } from '../../src/common/enums/expense.enum';
 
 @Entity()
+@Unique(['date', 'financialDataId', 'title'])
 export class Expense extends BaseEntity {
   @Column()
   amount: number;
@@ -20,4 +21,7 @@ export class Expense extends BaseEntity {
 
   @Column({ type: 'enum', enum: ExpenseType, default: ExpenseType.VARIABLE })
   type: ExpenseType;
+
+  @Column({ type: 'timestamptz' })
+  date: Date;
 }

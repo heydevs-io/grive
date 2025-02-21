@@ -1,4 +1,4 @@
 export enum ExpenseType {
-  FIXED = 'fixed',
-  VARIABLE = 'variable',
+  FIXED = 'FIXED',
+  VARIABLE = 'VARIABLE',
 }

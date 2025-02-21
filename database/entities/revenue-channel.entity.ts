@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { FinancialData } from './financial-data.entity';
 import { BaseEntity } from './base.entity';
 @Entity()
+@Unique(['date', 'financialDataId', 'channel'])
 export class RevenueChannel extends BaseEntity {
   @Column()
   amount: number;
@@ -18,4 +19,7 @@ export class RevenueChannel extends BaseEntity {
     (financialData) => financialData.revenueChannels,
   )
   financialData: FinancialData;
+
+  @Column({ type: 'timestamptz' })
+  date: Date;
 }

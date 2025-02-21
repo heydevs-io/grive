@@ -160,6 +160,14 @@ export class DateJS {
   static format(date: ConfigType, format: DateFormat | string) {
     return dayjs.utc(date).format(format);
   }
+  static diff(start: ConfigType, end: ConfigType, unit: OpUnitType) {
+    return dayjs(end).diff(start, unit);
+  }
+  static objectDateUTC(date: ConfigType, format?: DateFormat | string) {
+    const diffMinute = new Date().getTimezoneOffset();
+    const dateFormat = dayjs(date).format(format);
+    return dayjs(dateFormat).utc().subtract(diffMinute, 'minute').toDate();
+  }
   static isBetween(
     date: ConfigType,
     a: ConfigType,

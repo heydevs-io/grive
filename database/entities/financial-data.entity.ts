@@ -32,7 +32,7 @@ export class FinancialData extends BaseEntity {
   @Column({ default: 0 })
   totalProfit: number;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamptz' })
   date: Date;
 
   @OneToMany(

@@ -1,29 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
-  ArrayMaxSize,
   IsArray,
   IsDateString,
+  IsEnum,
   IsNumber,
   IsOptional,
   IsString,
-  Max,
   ValidateNested,
 } from 'class-validator';
+import { ExpenseType } from '@enums';
 
-export class RevenueChannelDto {
-  @IsString()
-  @IsOptional()
+export class CreateRevenueChannelDto {
+  @IsNumber({}, { each: true })
   @ApiProperty({
-    example: '5e4ce015-172c-4ecb-a264-9be315de0c12',
+    example: [10000, 20000, 30000, 40000],
   })
-  id: string;
-
-  @IsNumber()
-  @ApiProperty({
-    example: 10000,
-  })
-  amount: number;
+  values: number[];
 
   @IsString()
   @ApiProperty({
@@ -32,67 +25,122 @@ export class RevenueChannelDto {
   channel: string;
 }
 
-export class ExpenseDto {
-  @IsString()
-  @IsOptional()
-  @ApiProperty({
-    example: '5e4ce015-172c-4ecb-a264-9be315de0c73',
-  })
-  id: string;
-
-  @IsNumber()
+@Exclude()
+export class RevenueChannelDto {
+  @Expose()
   @ApiProperty({
     example: 10000,
   })
   amount: number;
+
+  @Expose()
+  @ApiProperty({
+    example: 'Online',
+  })
+  channel: string;
+
+  @Expose()
+  @ApiProperty({
+    example: '5e4ce015-172c-4ecb-a264-9be315de0c72',
+  })
+  id: string;
+}
+
+export class CreateExpenseDto {
+  @IsNumber({}, { each: true })
+  @ApiProperty({
+    example: [10000, 20000, 30000, 40000],
+  })
+  values: number[];
 
   @IsString()
   @ApiProperty({
     example: 'Salaries',
   })
   title: string;
+
+  @IsEnum(ExpenseType)
+  @ApiProperty({
+    example: ExpenseType.FIXED,
+    enum: ExpenseType,
+  })
+  type: ExpenseType;
 }
 
-export class FinancialDataDto {
-  @IsString()
-  @IsOptional()
+@Exclude()
+export class ExpenseDto {
+  @Expose()
+  @ApiProperty({
+    example: 10000,
+  })
+  amount: number;
+
+  @Expose()
+  @ApiProperty({
+    example: 'Salaries',
+  })
+  title: string;
+
+  @Expose()
+  @ApiProperty({
+    example: '5e4ce015-172c-4ecb-a264-9be315de0c72',
+  })
+  id: string;
+}
+
+@Exclude()
+export class FinancialDataResponseDto {
+  @Expose()
   @ApiProperty({
     example: '5e4ce015-172c-4ecb-a264-9be315de0c72',
   })
   id: string;
 
-  @IsDateString()
+  @Expose()
   @ApiProperty({
-    example: '2024-01',
+    example: new Date(),
   })
   date: Date;
 
-  @IsArray()
-  @ArrayMaxSize(15)
-  @IsOptional()
-  @ValidateNested({ each: true })
+  @Expose()
   @ApiProperty({
     type: [RevenueChannelDto],
   })
-  @Type(() => RevenueChannelDto)
   revenueChannels: RevenueChannelDto[];
 
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
+  @Expose()
   @ApiProperty({
     type: [ExpenseDto],
   })
-  @Type(() => ExpenseDto)
   expenses: ExpenseDto[];
 }
 
 export class ImportFinancialDataDto {
+  @IsDateString()
+  @ApiProperty({
+    example: '2024-01',
+  })
+  start: Date;
+
+  @IsDateString()
+  @ApiProperty({
+    example: '2024-12',
+  })
+  end: Date;
+
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => FinancialDataDto)
+  @Type(() => CreateRevenueChannelDto)
   @ApiProperty({
-    type: [FinancialDataDto],
+    type: [CreateRevenueChannelDto],
   })
-  financialData: FinancialDataDto[];
+  channels: CreateRevenueChannelDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateExpenseDto)
+  @ApiProperty({
+    type: [CreateExpenseDto],
+  })
+  expenses: CreateExpenseDto[];
 }

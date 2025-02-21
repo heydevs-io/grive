@@ -2,10 +2,14 @@ import { Expense, FinancialData, RevenueChannel } from '@entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateJS } from '@utils';
-import { DataSource, Repository } from 'typeorm';
+import { Between, DataSource, Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { FinancialDataOptionsDto } from './dto';
-import { ExpenseDto, FinancialDataDto, RevenueChannelDto } from './dto';
+import {
+  FinancialDataOptionsDto,
+  FinancialDataResponseDto,
+  ImportFinancialDataDto,
+} from './dto';
+import { CustomBadRequestException } from '../../common/exceptions';
 
 @Injectable()
 export class FinancialDataService {
@@ -15,16 +19,15 @@ export class FinancialDataService {
     private readonly financialDataRepository: Repository<FinancialData>,
   ) {}
 
-  async get(
-    userId: string,
-    financialDataOptions: FinancialDataOptionsDto,
-  ): Promise<FinancialDataDto[]> {
+  async get(userId: string, financialDataOptions: FinancialDataOptionsDto) {
     const query = this.financialDataRepository
       .createQueryBuilder('financialData')
       .where('financialData.userId = :userId', { userId })
       .leftJoinAndSelect('financialData.revenueChannels', 'revenueChannels')
       .leftJoinAndSelect('financialData.expenses', 'expenses')
       .orderBy('financialData.date', 'ASC')
+      .orderBy('revenueChannels.date', 'ASC')
+      .orderBy('expenses.date', 'ASC')
       .andWhere('financialData.date >= :fromYear', {
         fromYear: new Date(financialDataOptions.fromYear, 0, 1),
       })
@@ -34,7 +37,40 @@ export class FinancialDataService {
 
     const result = await query.getMany();
 
-    return result;
+    const startDate = result[0].date;
+    const endDate = result[result.length - 1].date;
+
+    const channels = new Map<string, RevenueChannel[]>();
+    const expenses = new Map<string, Expense[]>();
+
+    result.forEach((item) => {
+      item.revenueChannels.forEach((channel) => {
+        channels.set(channel.channel, [
+          ...(channels.get(channel.channel) || []),
+          channel,
+        ]);
+      });
+      item.expenses.forEach((expense) => {
+        expenses.set(`${expense.title}-${expense.type}`, [
+          ...(expenses.get(`${expense.title}-${expense.type}`) || []),
+          expense,
+        ]);
+      });
+    });
+
+    return {
+      start: DateJS.objectDateUTC(startDate, 'YYYY-MM').toISOString(),
+      end: DateJS.objectDateUTC(endDate, 'YYYY-MM').toISOString(),
+      channels: Array.from(channels.values()).map((item) => ({
+        channel: item[0].channel,
+        values: item.map((item) => item.amount),
+      })),
+      expenses: Array.from(expenses.values()).map((item) => ({
+        title: item[0].title,
+        values: item.map((item) => item.amount),
+        type: item[0].type,
+      })),
+    };
   }
 
   async checkExistFinancialData(userId: string): Promise<boolean> {
@@ -47,57 +83,101 @@ export class FinancialDataService {
     return !!result;
   }
 
-  async importFinancialData(payload: FinancialDataDto[], userId: string) {
+  async importFinancialData(payload: ImportFinancialDataDto, userId: string) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const revenues: Promise<RevenueChannelDto>[] = [];
-      const expenses: Promise<ExpenseDto>[] = [];
-      const financialDataCreated: Promise<FinancialDataDto>[] = [];
-      for (const financialData of payload) {
-        const dateFormat = new Date(
-          DateJS.getStartOfDay(financialData.date).utc(false).toISOString(),
-        );
+      const financialDataCreated: FinancialData[] = [];
+      const createChannel: RevenueChannel[] = [];
+      const createExpense: Expense[] = [];
 
-        let data = await this.financialDataRepository
-          .createQueryBuilder('financialData')
-          .where('financialData.userId = :userId', { userId })
-          .andWhere('financialData.id = :id', { id: financialData.id })
-          .orWhere('financialData.date = :date', {
-            date: dateFormat,
-          })
-          .getOne();
-        let id = data?.id;
-        if (!data) {
+      const startDateFormat = DateJS.getStartOfDay(payload.start)
+        .startOf('month')
+        .toISOString();
+      const endDateFormat = DateJS.getStartOfDay(payload.end)
+        .endOf('month')
+        .toISOString();
+
+      const monthLength =
+        DateJS.diff(startDateFormat, endDateFormat, 'month') + 1;
+
+      const financialData = await this.financialDataRepository
+        .createQueryBuilder('financialData')
+        .where('financialData.userId = :userId', { userId })
+        .andWhere('financialData.date >= :start', { start: startDateFormat })
+        .andWhere('financialData.date <= :end', { end: endDateFormat })
+        .getMany();
+
+      const financialDataMap = new Map(
+        financialData.map((item) => {
+          const dateFormat = DateJS.objectDateUTC(item.date, 'YYYY-MM');
+          return [
+            `${dateFormat.getFullYear()}-${(dateFormat.getMonth() + 1)
+              .toString()
+              .padStart(2, '0')}`,
+            item,
+          ];
+        }),
+      );
+
+      Array.from({ length: monthLength }, (_, index) => {
+        const dateFormat = DateJS.getStartOfDay(payload.start)
+          .add(index, 'month')
+          .startOf('month');
+
+        const financialData = financialDataMap.get(
+          dateFormat.format('YYYY-MM'),
+        );
+        let id = financialData?.id;
+        if (!financialData) {
           id = uuidv4();
           financialDataCreated.push(
-            queryRunner.manager.save(FinancialData, {
-              ...financialData,
+            queryRunner.manager.create(FinancialData, {
+              date: dateFormat.toISOString(),
               userId,
               id,
             }),
           );
         }
-        revenues.push(
-          ...financialData.revenueChannels?.map((revenue) =>
-            queryRunner.manager.save(RevenueChannel, {
-              ...revenue,
+        createChannel.push(
+          ...payload.channels.map((channel) => {
+            if (channel.values.length !== monthLength)
+              throw new CustomBadRequestException(
+                `Insufficient channel ${channel.channel} values for the specified number of months`,
+              );
+            return queryRunner.manager.create(RevenueChannel, {
+              amount: channel.values[index],
+              channel: channel.channel.trim(),
               financialDataId: id,
-            }),
-          ),
+              date: dateFormat.toISOString(),
+            });
+          }),
         );
-        expenses.push(
-          ...financialData.expenses?.map((expense) =>
-            queryRunner.manager.save(Expense, {
-              ...expense,
+        createExpense.push(
+          ...payload.expenses.map((expense) => {
+            if (expense.values.length !== monthLength)
+              throw new CustomBadRequestException(
+                `Insufficient expense ${expense.title} ${expense.type} values for the specified number of months`,
+              );
+            return queryRunner.manager.create(Expense, {
+              amount: expense.values[index],
+              title: expense.title.trim(),
               financialDataId: id,
-            }),
-          ),
+              type: expense.type,
+              date: dateFormat.toISOString(),
+            });
+          }),
         );
-      }
-      await Promise.all([...financialDataCreated, ...revenues, ...expenses]);
+      });
+      await queryRunner.manager.save(FinancialData, financialDataCreated);
+      await queryRunner.manager.upsert(RevenueChannel, createChannel, {
+        conflictPaths: ['date', 'financialDataId', 'channel'],
+      });
+      await queryRunner.manager.upsert(Expense, createExpense, {
+        conflictPaths: ['date', 'financialDataId', 'title'],
+      });
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
