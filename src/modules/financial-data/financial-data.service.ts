@@ -10,6 +10,7 @@ import {
   ImportFinancialDataDto,
 } from './dto';
 import { CustomBadRequestException } from '../../common/exceptions';
+import { MessageResponseDto } from '../auth/dto';
 
 @Injectable()
 export class FinancialDataService {
@@ -19,7 +20,10 @@ export class FinancialDataService {
     private readonly financialDataRepository: Repository<FinancialData>,
   ) {}
 
-  async get(userId: string, financialDataOptions: FinancialDataOptionsDto) {
+  async get(
+    userId: string,
+    financialDataOptions: FinancialDataOptionsDto,
+  ): Promise<FinancialDataResponseDto> {
     const query = this.financialDataRepository
       .createQueryBuilder('financialData')
       .where('financialData.userId = :userId', { userId })
@@ -28,11 +32,15 @@ export class FinancialDataService {
       .orderBy('financialData.date', 'ASC')
       .orderBy('revenueChannels.date', 'ASC')
       .orderBy('expenses.date', 'ASC')
-      .andWhere('financialData.date >= :fromYear', {
-        fromYear: new Date(financialDataOptions.fromYear, 0, 1),
+      .andWhere('financialData.date >= :startDate', {
+        startDate: DateJS.getStartOfDay(financialDataOptions.startDate)
+          .startOf('month')
+          .toISOString(),
       })
-      .andWhere('financialData.date <= :toYear', {
-        toYear: new Date(financialDataOptions.toYear, 12, 31),
+      .andWhere('financialData.date <= :endDate', {
+        endDate: DateJS.getStartOfDay(financialDataOptions.endDate)
+          .endOf('month')
+          .toISOString(),
       });
 
     const result = await query.getMany();
@@ -59,8 +67,8 @@ export class FinancialDataService {
     });
 
     return {
-      start: DateJS.objectDateUTC(startDate, 'YYYY-MM').toISOString(),
-      end: DateJS.objectDateUTC(endDate, 'YYYY-MM').toISOString(),
+      startDate: DateJS.objectDateUTC(startDate, 'YYYY-MM').toISOString(),
+      endDate: DateJS.objectDateUTC(endDate, 'YYYY-MM').toISOString(),
       channels: Array.from(channels.values()).map((item) => ({
         channel: item[0].channel,
         values: item.map((item) => item.amount),
@@ -83,7 +91,10 @@ export class FinancialDataService {
     return !!result;
   }
 
-  async importFinancialData(payload: ImportFinancialDataDto, userId: string) {
+  async importFinancialData(
+    payload: ImportFinancialDataDto,
+    userId: string,
+  ): Promise<MessageResponseDto> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -93,10 +104,10 @@ export class FinancialDataService {
       const createChannel: RevenueChannel[] = [];
       const createExpense: Expense[] = [];
 
-      const startDateFormat = DateJS.getStartOfDay(payload.start)
+      const startDateFormat = DateJS.getStartOfDay(payload.startDate)
         .startOf('month')
         .toISOString();
-      const endDateFormat = DateJS.getStartOfDay(payload.end)
+      const endDateFormat = DateJS.getStartOfDay(payload.endDate)
         .endOf('month')
         .toISOString();
 
@@ -123,7 +134,7 @@ export class FinancialDataService {
       );
 
       Array.from({ length: monthLength }, (_, index) => {
-        const dateFormat = DateJS.getStartOfDay(payload.start)
+        const dateFormat = DateJS.getStartOfDay(payload.startDate)
           .add(index, 'month')
           .startOf('month');
 
@@ -179,6 +190,9 @@ export class FinancialDataService {
         conflictPaths: ['date', 'financialDataId', 'title'],
       });
       await queryRunner.commitTransaction();
+      return {
+        message: 'Import financial data successfully',
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;

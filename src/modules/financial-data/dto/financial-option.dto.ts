@@ -1,15 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsNumber } from 'class-validator';
+import { IsDateString } from 'class-validator';
 
 export class FinancialDataOptionsDto {
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
-  @ApiProperty({ example: 2020 })
-  fromYear: number;
+  @IsDateString()
+  @ApiProperty({ example: '2024-01' })
+  startDate: Date;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
-  @ApiProperty({ example: 2021 })
-  toYear: number;
+  @IsDateString()
+  @ApiProperty({ example: '2024-12' })
+  endDate: Date;
 }

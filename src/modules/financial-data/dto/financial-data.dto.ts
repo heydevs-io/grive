@@ -26,13 +26,7 @@ export class CreateRevenueChannelDto {
 }
 
 @Exclude()
-export class RevenueChannelDto {
-  @Expose()
-  @ApiProperty({
-    example: 10000,
-  })
-  amount: number;
-
+export class RevenueChannelResponseDto {
   @Expose()
   @ApiProperty({
     example: 'Online',
@@ -41,9 +35,9 @@ export class RevenueChannelDto {
 
   @Expose()
   @ApiProperty({
-    example: '5e4ce015-172c-4ecb-a264-9be315de0c72',
+    example: [10000, 20000, 30000, 40000],
   })
-  id: string;
+  values: number[];
 }
 
 export class CreateExpenseDto {
@@ -68,13 +62,7 @@ export class CreateExpenseDto {
 }
 
 @Exclude()
-export class ExpenseDto {
-  @Expose()
-  @ApiProperty({
-    example: 10000,
-  })
-  amount: number;
-
+export class ExpenseResponseDto {
   @Expose()
   @ApiProperty({
     example: 'Salaries',
@@ -83,36 +71,43 @@ export class ExpenseDto {
 
   @Expose()
   @ApiProperty({
-    example: '5e4ce015-172c-4ecb-a264-9be315de0c72',
+    example: [10000, 20000, 30000, 40000],
   })
-  id: string;
+  values: number[];
+
+  @Expose()
+  @ApiProperty({
+    example: ExpenseType.FIXED,
+    enum: ExpenseType,
+  })
+  type: ExpenseType;
 }
 
 @Exclude()
 export class FinancialDataResponseDto {
   @Expose()
   @ApiProperty({
-    example: '5e4ce015-172c-4ecb-a264-9be315de0c72',
+    example: '2024-01',
   })
-  id: string;
+  startDate: string;
 
   @Expose()
   @ApiProperty({
-    example: new Date(),
+    example: '2024-12',
   })
-  date: Date;
+  endDate: string;
 
   @Expose()
   @ApiProperty({
-    type: [RevenueChannelDto],
+    type: [RevenueChannelResponseDto],
   })
-  revenueChannels: RevenueChannelDto[];
+  channels: RevenueChannelResponseDto[];
 
   @Expose()
   @ApiProperty({
-    type: [ExpenseDto],
+    type: [ExpenseResponseDto],
   })
-  expenses: ExpenseDto[];
+  expenses: ExpenseResponseDto[];
 }
 
 export class ImportFinancialDataDto {
@@ -120,13 +115,13 @@ export class ImportFinancialDataDto {
   @ApiProperty({
     example: '2024-01',
   })
-  start: Date;
+  startDate: Date;
 
   @IsDateString()
   @ApiProperty({
     example: '2024-12',
   })
-  end: Date;
+  endDate: Date;
 
   @IsArray()
   @ValidateNested({ each: true })
