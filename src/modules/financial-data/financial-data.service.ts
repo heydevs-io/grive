@@ -38,12 +38,14 @@ export class FinancialDataService {
           .toISOString(),
       })
       .andWhere('financialData.date <= :endDate', {
-        endDate: DateJS.getStartOfDay(financialDataOptions.endDate)
+        endDate: DateJS.getEndOfDay(financialDataOptions.endDate)
           .endOf('month')
           .toISOString(),
       });
 
     const result = await query.getMany();
+
+    console.log(result[0].updatedAt.toISOString());
 
     const startDate = result[0].date;
     const endDate = result[result.length - 1].date;
@@ -134,19 +136,23 @@ export class FinancialDataService {
       );
 
       Array.from({ length: monthLength }, (_, index) => {
-        const dateFormat = DateJS.getStartOfDay(payload.startDate)
-          .add(index, 'month')
-          .startOf('month');
+        const dateFormat = DateJS.objectDateUTC(
+          DateJS.getStartOfDay(payload.startDate)
+            .add(index, 'month')
+            .startOf('month'),
+          'YYYY-MM',
+        ).toISOString();
 
         const financialData = financialDataMap.get(
-          dateFormat.format('YYYY-MM'),
+          DateJS.format(dateFormat, 'YYYY-MM'),
         );
+
         let id = financialData?.id;
         if (!financialData) {
           id = uuidv4();
           financialDataCreated.push(
             queryRunner.manager.create(FinancialData, {
-              date: dateFormat.toISOString(),
+              date: dateFormat,
               userId,
               id,
             }),
@@ -162,7 +168,7 @@ export class FinancialDataService {
               amount: channel.values[index],
               channel: channel.channel.trim(),
               financialDataId: id,
-              date: dateFormat.toISOString(),
+              date: dateFormat,
             });
           }),
         );
@@ -177,7 +183,7 @@ export class FinancialDataService {
               title: expense.title.trim(),
               financialDataId: id,
               type: expense.type,
-              date: dateFormat.toISOString(),
+              date: dateFormat,
             });
           }),
         );

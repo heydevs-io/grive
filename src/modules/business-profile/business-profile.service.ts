@@ -45,6 +45,9 @@ export class BusinessProfileService {
         throw new CustomBadRequestException('Invalid industry SIC code');
       data.industryTitle = industryTitle;
     }
+    if (payload.foundedDate) {
+      data.foundedDate = DateJS.format(payload.foundedDate, 'YYYY-MM');
+    }
     const businessProfile = this.businessProfileRepository.create(data);
     return await this.businessProfileRepository.save(businessProfile);
   }
