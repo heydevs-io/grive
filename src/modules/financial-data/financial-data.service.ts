@@ -23,7 +23,7 @@ export class FinancialDataService {
   async get(
     userId: string,
     financialDataOptions: FinancialDataOptionsDto,
-  ): Promise<FinancialDataResponseDto> {
+  ): Promise<FinancialDataResponseDto | null> {
     const query = this.financialDataRepository
       .createQueryBuilder('financialData')
       .where('financialData.userId = :userId', { userId })
@@ -45,7 +45,9 @@ export class FinancialDataService {
 
     const result = await query.getMany();
 
-    console.log(result[0].updatedAt.toISOString());
+    if (result.length === 0) {
+      return null;
+    }
 
     const startDate = result[0].date;
     const endDate = result[result.length - 1].date;

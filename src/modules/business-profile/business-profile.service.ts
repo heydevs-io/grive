@@ -63,7 +63,7 @@ export class BusinessProfileService {
     const data: any = {
       ...payload,
       userId,
-      foundedDate: DateJS.format(payload.foundedDate, 'YYYY-MM'),
+      foundedDate: new Date(DateJS.format(payload.foundedDate, 'YYYY-MM')),
     };
     if (payload.industrySIC) {
       const industryTitle = getSicCodeTitle(payload.industrySIC);
