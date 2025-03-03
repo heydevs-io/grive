@@ -95,4 +95,10 @@ export class BusinessProfileService {
     if (!businessProfile || !businessProfile.onboardingComplete) return null;
     return plainToInstance(BusinessProfileResponseDto, businessProfile);
   }
+
+  async getBusinessProfileByUserId(userId: string) {
+    return await this.businessProfileRepository.findOne({
+      where: { userId },
+    });
+  }
 }

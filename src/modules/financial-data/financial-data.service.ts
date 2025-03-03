@@ -8,9 +8,12 @@ import {
   FinancialDataOptionsDto,
   FinancialDataResponseDto,
   ImportFinancialDataDto,
+  OverallFinancialDataResponseDto,
 } from './dto';
 import { CustomBadRequestException } from '../../common/exceptions';
 import { MessageResponseDto } from '../auth/dto';
+import { PolynomialRegression } from 'ml-regression';
+import { BusinessProfileService } from '../business-profile/business-profile.service';
 
 @Injectable()
 export class FinancialDataService {
@@ -18,15 +21,23 @@ export class FinancialDataService {
     private readonly dataSource: DataSource,
     @InjectRepository(FinancialData)
     private readonly financialDataRepository: Repository<FinancialData>,
+    private readonly businessProfileService: BusinessProfileService,
   ) {}
 
   async get(
     userId: string,
     financialDataOptions: FinancialDataOptionsDto,
   ): Promise<FinancialDataResponseDto | null> {
+    const businessProfile =
+      await this.businessProfileService.getBusinessProfileByUserId(userId);
+    if (!businessProfile) {
+      return null;
+    }
     const query = this.financialDataRepository
       .createQueryBuilder('financialData')
-      .where('financialData.userId = :userId', { userId })
+      .where('financialData.businessId = :businessId', {
+        businessId: businessProfile.id,
+      })
       .leftJoinAndSelect('financialData.revenueChannels', 'revenueChannels')
       .leftJoinAndSelect('financialData.expenses', 'expenses')
       .orderBy('financialData.date', 'ASC')
@@ -86,9 +97,14 @@ export class FinancialDataService {
   }
 
   async checkExistFinancialData(userId: string): Promise<boolean> {
+    const businessProfile =
+      await this.businessProfileService.getBusinessProfileByUserId(userId);
+    if (!businessProfile) {
+      return false;
+    }
     const result = await this.financialDataRepository.findOne({
       where: {
-        userId,
+        businessId: businessProfile.id,
       },
     });
 
@@ -99,6 +115,11 @@ export class FinancialDataService {
     payload: ImportFinancialDataDto,
     userId: string,
   ): Promise<MessageResponseDto> {
+    const businessProfile =
+      await this.businessProfileService.getBusinessProfileByUserId(userId);
+    if (!businessProfile) {
+      throw new CustomBadRequestException('Business profile not found');
+    }
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -120,7 +141,9 @@ export class FinancialDataService {
 
       const financialData = await this.financialDataRepository
         .createQueryBuilder('financialData')
-        .where('financialData.userId = :userId', { userId })
+        .where('financialData.businessId = :businessId', {
+          businessId: businessProfile.id,
+        })
         .andWhere('financialData.date >= :start', { start: startDateFormat })
         .andWhere('financialData.date <= :end', { end: endDateFormat })
         .getMany();
@@ -155,7 +178,7 @@ export class FinancialDataService {
           financialDataCreated.push(
             queryRunner.manager.create(FinancialData, {
               date: dateFormat,
-              userId,
+              businessId: businessProfile.id,
               id,
             }),
           );
@@ -207,5 +230,88 @@ export class FinancialDataService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async getCurrentOverallFinancialData(
+    userId: string,
+  ): Promise<OverallFinancialDataResponseDto> {
+    const businessProfile =
+      await this.businessProfileService.getBusinessProfileByUserId(userId);
+    if (!businessProfile) {
+      throw new CustomBadRequestException('Business profile not found');
+    }
+    const currentYear = new Date().getFullYear();
+    const startYear = new Date(currentYear, 0, 1);
+    const endYear = new Date(currentYear, 11, 31);
+
+    const query = this.financialDataRepository
+      .createQueryBuilder('financialData')
+      .where('financialData.businessId = :businessId', {
+        businessId: businessProfile.id,
+      })
+      .andWhere('financialData.date >= :start', { start: startYear })
+      .andWhere('financialData.date <= :end', { end: endYear });
+
+    const result = await query.getMany();
+    let overallRevenue = 0;
+    let overallExpenses = 0;
+    let listTotalRevenue: number[] = [];
+    let listTotalExpenses: number[] = [];
+    result.forEach((item) => {
+      const revenue = item.revenueChannels.reduce(
+        (acc, curr) => acc + curr.amount,
+        0,
+      );
+      listTotalRevenue.push(revenue);
+      overallRevenue += revenue;
+
+      const expenses = item.expenses.reduce(
+        (acc, curr) => acc + curr.amount,
+        0,
+      );
+      listTotalExpenses.push(expenses);
+      overallExpenses += expenses;
+    });
+    if (result.length === 0) {
+      return {
+        overallRevenue,
+        overallExpenses,
+        predictedRevenue: 0,
+        predictedExpenses: 0,
+      };
+    }
+
+    const lastMonth = result[result.length - 1].date.getMonth() + 1;
+    let predictedRevenue = this.getPredictedFinancialData(
+      listTotalRevenue,
+      lastMonth,
+    );
+    let predictedExpenses = this.getPredictedFinancialData(
+      listTotalExpenses,
+      lastMonth,
+    );
+
+    return {
+      overallRevenue,
+      overallExpenses,
+      predictedRevenue,
+      predictedExpenses,
+    };
+  }
+
+  private getPredictedFinancialData(
+    listData: number[],
+    lastMonth: number,
+  ): number {
+    const sampleMonths = Array.from(
+      { length: lastMonth },
+      (_, index) => index + 1,
+    );
+    const regression = new PolynomialRegression(sampleMonths, listData);
+    let predicted = 0;
+    for (let month = 1; month <= lastMonth; month++) {
+      predicted += regression.predict(month);
+    }
+    return predicted;
   }
 }

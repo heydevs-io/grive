@@ -1,6 +1,4 @@
 import {
-  BeforeInsert,
-  BeforeUpdate,
   Column,
   Entity,
   JoinColumn,
@@ -9,20 +7,13 @@ import {
   Unique,
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { User } from './user.entity';
-import { RevenueChannel } from './revenue-channel.entity';
+import { BusinessProfile } from './business-profile.entity';
 import { Expense } from './expense.entity';
+import { RevenueChannel } from './revenue-channel.entity';
 
 @Entity()
-@Unique(['userId', 'date'])
+@Unique(['businessId', 'date'])
 export class FinancialData extends BaseEntity {
-  @Column()
-  userId: string;
-
-  @JoinColumn({ name: 'user_id' })
-  @ManyToOne(() => User)
-  user: User;
-
   @Column({ default: 0 })
   totalRevenue: number;
 
@@ -43,4 +34,11 @@ export class FinancialData extends BaseEntity {
 
   @OneToMany(() => Expense, (expense) => expense.financialData)
   expenses: Expense[];
+
+  @Column({ nullable: true })
+  businessId: string;
+
+  @JoinColumn({ name: 'business_id' })
+  @ManyToOne(() => BusinessProfile)
+  business: BusinessProfile;
 }

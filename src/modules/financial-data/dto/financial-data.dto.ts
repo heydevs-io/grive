@@ -139,3 +139,29 @@ export class ImportFinancialDataDto {
   })
   expenses: CreateExpenseDto[];
 }
+
+export class OverallFinancialDataResponseDto {
+  @Expose()
+  @ApiProperty({
+    example: 100000,
+  })
+  overallRevenue: number;
+
+  @Expose()
+  @ApiProperty({
+    example: 100000,
+  })
+  overallExpenses: number;
+
+  @Expose()
+  @ApiProperty({
+    example: 100000,
+  })
+  predictedRevenue: number;
+
+  @Expose()
+  @ApiProperty({
+    example: 100000,
+  })
+  predictedExpenses: number;
+}
