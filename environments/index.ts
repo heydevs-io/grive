@@ -31,3 +31,9 @@ export const SUPABASE_URL = process.env.SUPABASE_URL;
 export const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
 export const DEFAULT_OTP = process.env.DEFAULT_OTP || '111111';
+
+// * Dify AI
+export const DIFY_AI_API_URL = process.env.DIFY_AI_API_URL!;
+export const DIFY_AI_EMAIL = process.env.DIFY_AI_EMAIL!;
+export const DIFY_AI_INNER_API_KEY = process.env.DIFY_AI_INNER_API_KEY!;
+export const DIFY_APP_CODE = process.env.DIFY_APP_CODE!;

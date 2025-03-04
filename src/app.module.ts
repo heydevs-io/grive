@@ -1,26 +1,27 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigType, ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigType } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { validate } from '@validate';
+import { WinstonModule, WinstonModuleOptions } from 'nest-winston';
+import { DataSource } from 'typeorm';
+import { addTransactionalDataSource } from 'typeorm-transactional';
+import { GlobalHandleExceptionFilter } from './common/exceptions';
+import { configs, DatabaseConfig, LogConfig } from './config';
 import {
   AuthModule,
   BusinessProfileModule,
   FinancialDataModule,
   UserModule,
 } from './modules';
-import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { addTransactionalDataSource } from 'typeorm-transactional';
-import { DataSource } from 'typeorm';
-import { configs, DatabaseConfig, LogConfig } from './config';
-import { WinstonModule, WinstonModuleOptions } from 'nest-winston';
-import { APP_FILTER } from '@nestjs/core';
-import { GlobalHandleExceptionFilter } from './common/exceptions';
-
+import { ConversationModule } from './modules/conversation/conversation.module';
 const modules = [
   AuthModule,
   UserModule,
   BusinessProfileModule,
   FinancialDataModule,
   UserModule,
+  ConversationModule,
 ];
 @Module({
   imports: [

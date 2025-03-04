@@ -49,6 +49,9 @@
       ],
       "@dtos": [
         "src/common/dtos/index"
+      ],
+      "@http": [
+        "src/common/http/index"
       ]
     }
   }
