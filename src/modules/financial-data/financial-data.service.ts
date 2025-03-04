@@ -5,6 +5,8 @@ import { DateJS } from '@utils';
 import { Between, DataSource, Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import {
+  AnalyzeFinancialDataDto,
+  AnalyzeFinancialDataResponseDto,
   FinancialDataOptionsDto,
   FinancialDataResponseDto,
   ImportFinancialDataDto,
@@ -14,6 +16,8 @@ import { CustomBadRequestException } from '../../common/exceptions';
 import { MessageResponseDto } from '../auth/dto';
 import { PolynomialRegression } from 'ml-regression';
 import { BusinessProfileService } from '../business-profile/business-profile.service';
+import _ from 'lodash';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class FinancialDataService {
@@ -258,17 +262,11 @@ export class FinancialDataService {
     let listTotalRevenue: number[] = [];
     let listTotalExpenses: number[] = [];
     result.forEach((item) => {
-      const revenue = item.revenueChannels.reduce(
-        (acc, curr) => acc + curr.amount,
-        0,
-      );
+      const revenue = _.sumBy(item.revenueChannels, 'amount');
       listTotalRevenue.push(revenue);
       overallRevenue += revenue;
 
-      const expenses = item.expenses.reduce(
-        (acc, curr) => acc + curr.amount,
-        0,
-      );
+      const expenses = _.sumBy(item.expenses, 'amount');
       listTotalExpenses.push(expenses);
       overallExpenses += expenses;
     });
@@ -313,5 +311,34 @@ export class FinancialDataService {
       predicted += regression.predict(month);
     }
     return predicted;
+  }
+
+  async analyzeFinancialData(
+    userId: string,
+    analyzeOptions: AnalyzeFinancialDataDto,
+  ): Promise<AnalyzeFinancialDataResponseDto[]> {
+    const { year } = analyzeOptions;
+    const businessProfile =
+      await this.businessProfileService.getBusinessProfileByUserId(userId);
+    if (!businessProfile) {
+      throw new CustomBadRequestException('Business profile not found');
+    }
+
+    const currentYear = new Date().getFullYear();
+    const startYear = new Date(Number(year || currentYear), 0, 1);
+    const endYear = new Date(Number(year || currentYear), 11, 31);
+
+    const query = this.financialDataRepository
+      .createQueryBuilder('financialData')
+      .where('financialData.businessId = :businessId', {
+        businessId: businessProfile.id,
+      })
+      .andWhere('financialData.date >= :start', { start: startYear })
+      .andWhere('financialData.date <= :end', { end: endYear })
+      .orderBy('financialData.date', 'ASC');
+
+    const result = await query.getMany();
+
+    return plainToInstance(AnalyzeFinancialDataResponseDto, result);
   }
 }

@@ -165,3 +165,30 @@ export class OverallFinancialDataResponseDto {
   })
   predictedExpenses: number;
 }
+
+@Exclude()
+export class AnalyzeFinancialDataResponseDto {
+  @Expose()
+  @ApiProperty({
+    example: 100000,
+  })
+  totalRevenue: number;
+
+  @Expose()
+  @ApiProperty({
+    example: 100000,
+  })
+  totalExpenses: number;
+
+  @Expose()
+  @ApiProperty({
+    example: 100000,
+  })
+  totalProfit: number;
+
+  @Expose()
+  @ApiProperty({
+    example: '2024-01',
+  })
+  date: string;
+}

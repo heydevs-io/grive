@@ -8,6 +8,8 @@ import {
   ImportFinancialDataDto,
   FinancialDataOptionsDto,
   OverallFinancialDataResponseDto,
+  AnalyzeFinancialDataDto,
+  AnalyzeFinancialDataResponseDto,
 } from './dto';
 import { FinancialDataService } from './financial-data.service';
 import { MessageResponseDto } from '../auth/dto';
@@ -46,5 +48,17 @@ export class FinancialDataController {
   @CustomApiResponse(OverallFinancialDataResponseDto)
   getOverallFinancialData(@CurrentUser() user: User) {
     return this.financialDataService.getCurrentOverallFinancialData(user.id);
+  }
+
+  @Get('analyze')
+  @CustomApiResponse(AnalyzeFinancialDataResponseDto)
+  analyzeFinancialData(
+    @CurrentUser() user: User,
+    @Query() analyzeOptions: AnalyzeFinancialDataDto,
+  ): Promise<AnalyzeFinancialDataResponseDto[]> {
+    return this.financialDataService.analyzeFinancialData(
+      user.id,
+      analyzeOptions,
+    );
   }
 }
