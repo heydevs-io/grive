@@ -7,6 +7,7 @@ import {
   FinancialDataResponseDto,
   ImportFinancialDataDto,
   FinancialDataOptionsDto,
+  OverallFinancialDataResponseDto,
 } from './dto';
 import { FinancialDataService } from './financial-data.service';
 import { MessageResponseDto } from '../auth/dto';
@@ -39,5 +40,11 @@ export class FinancialDataController {
   @CustomApiResponse(Boolean)
   checkExistFinancialData(@CurrentUser() user: User) {
     return this.financialDataService.checkExistFinancialData(user.id);
+  }
+
+  @Get('overall')
+  @CustomApiResponse(OverallFinancialDataResponseDto)
+  getOverallFinancialData(@CurrentUser() user: User) {
+    return this.financialDataService.getCurrentOverallFinancialData(user.id);
   }
 }
