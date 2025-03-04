@@ -38,6 +38,18 @@ class EnvironmentVariables {
 
   @IsString()
   SUPABASE_ANON_KEY: string;
+
+  @IsString()
+  DIFY_AI_API_URL: string;
+
+  @IsString()
+  DIFY_AI_EMAIL: string;
+
+  @IsString()
+  DIFY_AI_INNER_API_KEY: string;
+
+  @IsString()
+  DIFY_APP_CODE: string;
 }
 
 export function validate(config: Record<string, unknown>) {

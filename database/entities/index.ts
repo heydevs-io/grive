@@ -4,3 +4,4 @@ export * from './business-profile.entity';
 export * from './financial-data.entity';
 export * from './revenue-channel.entity';
 export * from './expense.entity';
+export * from './conversation.entity';
