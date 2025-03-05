@@ -1,12 +1,13 @@
 import { NamingStrategy } from 'database/typeorm';
 import * as dotenv from 'dotenv';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { SeederOptions } from 'typeorm-extension';
 
 dotenv.config({
   path: '.env',
 });
 
-const options: DataSourceOptions = {
+const options: DataSourceOptions & SeederOptions = {
   type: 'postgres',
   host: process.env.POSTGRES_HOST,
   port: parseInt(process.env.POSTGRES_PORT!, 10),
@@ -17,6 +18,7 @@ const options: DataSourceOptions = {
   namingStrategy: new NamingStrategy(),
   migrationsTableName: '__migrations',
   migrations: ['./database/migrations/**/*.ts'],
+  seeds: ['src/seeds/main.seed.ts'],
   synchronize: false,
   migrationsRun: true,
 };

@@ -15,7 +15,7 @@ export class BusinessProfile extends BaseEntity {
   @Column({ type: 'varchar' })
   name: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   website?: string;
 
   @Column({ type: 'timestamptz', nullable: true })

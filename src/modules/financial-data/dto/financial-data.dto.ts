@@ -192,3 +192,18 @@ export class AnalyzeFinancialDataResponseDto {
   })
   date: string;
 }
+
+@Exclude()
+export class RevenueChannelGrowthRateResponseDto {
+  @Expose()
+  @ApiProperty({
+    example: 'Online',
+  })
+  channel: string;
+
+  @Expose()
+  @ApiProperty({
+    example: 10,
+  })
+  growthRate: number;
+}
