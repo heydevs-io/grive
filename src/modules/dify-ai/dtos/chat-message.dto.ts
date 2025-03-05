@@ -48,6 +48,7 @@ export class ChatMessageRequestDto {
   @ApiProperty({
     description: 'The files to use for the chat message',
     example: [],
+    required: false,
   })
   files?: string[];
 
@@ -61,7 +62,9 @@ export class ChatMessageRequestDto {
 
   @ValidateNested()
   @Type(() => ChatMessageInputsDto)
-  @ApiProperty({})
+  @ApiProperty({
+    required: false,
+  })
   inputs: ChatMessageInputsDto;
 
   @IsString()
@@ -69,8 +72,9 @@ export class ChatMessageRequestDto {
   @ApiProperty({
     description: 'The parent message ID to use for the chat message',
     example: null,
+    required: false,
   })
-  parent_message_id?: string;
+  parent_message_id?: string | null;
 }
 
 export class ChatMessageResponseDto {

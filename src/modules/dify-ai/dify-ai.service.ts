@@ -57,7 +57,12 @@ export class DifyAiService {
     input: ChatMessageRequestDto,
     token: string,
   ): Promise<Readable> {
-    const dto = new PostChatMessageDto(input);
+    const dto = new PostChatMessageDto({
+      ...input,
+      files: [],
+      inputs: {},
+      parent_message_id: null,
+    });
     const response = await fetchStreamDto({
       httpService: this.httpService,
       headers: new AxiosHeaders({
