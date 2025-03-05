@@ -11,10 +11,11 @@ import {
   FinancialDataResponseDto,
   ImportFinancialDataDto,
   OverallFinancialDataResponseDto,
+  RevenueChannelGrowthRateResponseDto,
 } from './dto';
 import { CustomBadRequestException } from '../../common/exceptions';
 import { MessageResponseDto } from '../auth/dto';
-import { PolynomialRegression } from 'ml-regression';
+import { SimpleLinearRegression, PolynomialRegression } from 'ml-regression';
 import { BusinessProfileService } from '../business-profile/business-profile.service';
 import _ from 'lodash';
 import { plainToInstance } from 'class-transformer';
@@ -257,37 +258,23 @@ export class FinancialDataService {
       .andWhere('financialData.date <= :end', { end: endYear });
 
     const result = await query.getMany();
-    let overallRevenue = 0;
-    let overallExpenses = 0;
-    let listTotalRevenue: number[] = [];
-    let listTotalExpenses: number[] = [];
-    result.forEach((item) => {
-      const revenue = _.sumBy(item.revenueChannels, 'amount');
-      listTotalRevenue.push(revenue);
-      overallRevenue += revenue;
 
-      const expenses = _.sumBy(item.expenses, 'amount');
-      listTotalExpenses.push(expenses);
-      overallExpenses += expenses;
-    });
     if (result.length === 0) {
       return {
-        overallRevenue,
-        overallExpenses,
+        overallRevenue: 0,
+        overallExpenses: 0,
         predictedRevenue: 0,
         predictedExpenses: 0,
       };
     }
 
-    const lastMonth = result[result.length - 1].date.getMonth() + 1;
-    let predictedRevenue = this.getPredictedFinancialData(
-      listTotalRevenue,
-      lastMonth,
-    );
-    let predictedExpenses = this.getPredictedFinancialData(
-      listTotalExpenses,
-      lastMonth,
-    );
+    const overallRevenue = _.sumBy(result, 'totalRevenue');
+    const overallExpenses = _.sumBy(result, 'totalExpenses');
+    const listTotalRevenue = result.map((item) => item.totalRevenue);
+    const listTotalExpenses = result.map((item) => item.totalExpenses);
+
+    const predictedRevenue = this.getPredictedFinancialData(listTotalRevenue);
+    const predictedExpenses = this.getPredictedFinancialData(listTotalExpenses);
 
     return {
       overallRevenue,
@@ -297,20 +284,17 @@ export class FinancialDataService {
     };
   }
 
-  private getPredictedFinancialData(
-    listData: number[],
-    lastMonth: number,
-  ): number {
+  private getPredictedFinancialData(listData: number[]): number {
     const sampleMonths = Array.from(
-      { length: lastMonth },
+      { length: listData.length },
       (_, index) => index + 1,
     );
-    const regression = new PolynomialRegression(sampleMonths, listData);
-    let predicted = 0;
-    for (let month = 1; month <= lastMonth; month++) {
-      predicted += regression.predict(month);
-    }
-    return predicted;
+    // Degree 2 is the best fit for the data
+    const degree = 2;
+    // Get index of December in year
+    const predictIndex = 12 - listData.length;
+    const regression = new PolynomialRegression(sampleMonths, listData, degree);
+    return regression.predict(predictIndex);
   }
 
   async analyzeFinancialData(
@@ -340,5 +324,45 @@ export class FinancialDataService {
     const result = await query.getMany();
 
     return plainToInstance(AnalyzeFinancialDataResponseDto, result);
+  }
+
+  async getRevenueChannelGrowthRate(
+    userId: string,
+  ): Promise<RevenueChannelGrowthRateResponseDto[]> {
+    const businessProfile =
+      await this.businessProfileService.getBusinessProfileByUserId(userId);
+    if (!businessProfile) {
+      throw new CustomBadRequestException('Business profile not found');
+    }
+
+    const query = this.financialDataRepository
+      .createQueryBuilder('financialData')
+      .where('financialData.businessId = :businessId', {
+        businessId: businessProfile.id,
+      })
+      .leftJoinAndSelect('financialData.revenueChannels', 'revenueChannels')
+      .orderBy('financialData.date', 'DESC');
+
+    const result = await query.getMany();
+
+    //Get only 2 latest months data
+    const numberOfMonths = 2;
+    if (result.length < numberOfMonths) {
+      return [];
+    }
+
+    const previousData = result[1];
+    const currentData = result[0];
+
+    const data = previousData.revenueChannels.map((item, index) => ({
+      channel: item.channel,
+      growthRate:
+        ((currentData.revenueChannels[index].amount -
+          previousData.revenueChannels[index].amount) /
+          previousData.revenueChannels[index].amount) *
+        100,
+    }));
+
+    return plainToInstance(RevenueChannelGrowthRateResponseDto, data);
   }
 }

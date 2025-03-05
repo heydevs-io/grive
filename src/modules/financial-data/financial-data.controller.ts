@@ -10,6 +10,7 @@ import {
   OverallFinancialDataResponseDto,
   AnalyzeFinancialDataDto,
   AnalyzeFinancialDataResponseDto,
+  RevenueChannelGrowthRateResponseDto,
 } from './dto';
 import { FinancialDataService } from './financial-data.service';
 import { MessageResponseDto } from '../auth/dto';
@@ -60,5 +61,10 @@ export class FinancialDataController {
       user.id,
       analyzeOptions,
     );
+  }
+  @Get('revenue-channel/growth-rate')
+  @CustomApiResponse(RevenueChannelGrowthRateResponseDto)
+  getRevenueChannelGrowthRate(@CurrentUser() user: User) {
+    return this.financialDataService.getRevenueChannelGrowthRate(user.id);
   }
 }
