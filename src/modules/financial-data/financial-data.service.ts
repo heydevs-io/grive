@@ -2,8 +2,14 @@ import { Expense, FinancialData, RevenueChannel } from '@entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateJS } from '@utils';
-import { Between, DataSource, Repository } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
+import _ from 'lodash';
+import { PolynomialRegression } from 'ml-regression';
+import { DataSource, Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
+import { CustomBadRequestException } from '../../common/exceptions';
+import { MessageResponseDto } from '../auth/dto';
+import { BusinessProfileService } from '../business-profile/business-profile.service';
 import {
   AnalyzeFinancialDataDto,
   AnalyzeFinancialDataResponseDto,
@@ -13,12 +19,6 @@ import {
   OverallFinancialDataResponseDto,
   RevenueChannelGrowthRateResponseDto,
 } from './dto';
-import { CustomBadRequestException } from '../../common/exceptions';
-import { MessageResponseDto } from '../auth/dto';
-import { SimpleLinearRegression, PolynomialRegression } from 'ml-regression';
-import { BusinessProfileService } from '../business-profile/business-profile.service';
-import _ from 'lodash';
-import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class FinancialDataService {

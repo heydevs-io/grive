@@ -53,7 +53,7 @@ export class CustomBadRequestException extends Exception {
           ? `${parentProperty}.${error.property}`
           : error.property;
         if (error.constraints) {
-          // eslint-disable-next-line no-param-reassign
+           
           result[property] = error.constraints;
         } else if (error.children?.length) {
           parseErrors(error.children, result, property);

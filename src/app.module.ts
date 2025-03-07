@@ -13,8 +13,11 @@ import {
   BusinessProfileModule,
   FinancialDataModule,
   UserModule,
+  ConversationModule,
+  PlanModule,
+  ScenarioModule,
+  SimulationModule,
 } from './modules';
-import { ConversationModule } from './modules/conversation/conversation.module';
 const modules = [
   AuthModule,
   UserModule,
@@ -22,6 +25,9 @@ const modules = [
   FinancialDataModule,
   UserModule,
   ConversationModule,
+  PlanModule,
+  ScenarioModule,
+  SimulationModule,
 ];
 @Module({
   imports: [

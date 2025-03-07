@@ -1,0 +1,5 @@
+export enum ScenarioType {
+  CONSERVATION = 'CONSERVATION',
+  MODERATE = 'MODERATE',
+  AGGRESSIVE = 'AGGRESSIVE',
+}
