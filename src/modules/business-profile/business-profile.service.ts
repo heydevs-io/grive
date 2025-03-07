@@ -1,4 +1,9 @@
-import { BusinessType, DateFormat } from '@enums';
+import { BusinessProfile } from '@entities';
+import { BusinessType } from '@enums';
+import {
+  CustomBadRequestException,
+  CustomNotFoundException,
+} from '@exceptions';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -7,18 +12,14 @@ import {
   getSicCodesByCategory,
   getSicCodeTitle,
 } from '@utils';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import {
+  BusinessProfileResponseDto,
   CreateBusinessProfileDto,
   UpdateBusinessProfileDto,
-  BusinessProfileResponseDto,
+  UpdateResponse,
 } from './dto';
-import {
-  CustomBadRequestException,
-  CustomNotFoundException,
-} from '@exceptions';
-import { plainToInstance } from 'class-transformer';
-import { BusinessProfile } from '@entities';
 
 @Injectable()
 export class BusinessProfileService {
@@ -83,7 +84,7 @@ export class BusinessProfileService {
     if (!res || res.affected === 0)
       throw new CustomBadRequestException('Failed to update business profile');
 
-    return plainToInstance(UpdateBusinessProfileDto, {
+    return plainToInstance(UpdateResponse, {
       isUpdated: true,
     });
   }

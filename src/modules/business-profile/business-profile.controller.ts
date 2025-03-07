@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -17,15 +18,17 @@ import {
   IndustryResponseDto,
   UpdateBusinessProfileDto,
   BusinessProfileResponseDto,
+  UpdateProfileDto,
 } from './dto';
 import { User } from '@entities';
-
+import { UserService } from '../user/user.service';
 @Controller('business-profile')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
 export class BusinessProfileController {
   constructor(
     private readonly businessProfileService: BusinessProfileService,
+    private readonly userService: UserService,
   ) {}
 
   @Post()
@@ -61,5 +64,24 @@ export class BusinessProfileController {
   @CustomApiResponse(IndustryResponseDto, true)
   getIndustries(@Query() query: IndustryOptionDto) {
     return this.businessProfileService.getIndustries(query.category);
+  }
+
+  @Put('profile')
+  // @CustomApiResponse(UserResponseDto)
+  async updateProfile(
+    @CurrentUser() user: User,
+    @Body() payload: UpdateProfileDto,
+  ) {
+    const { fullName, ...businessProfilePayload } = payload;
+    await this.userService.updateUser(user.id, {
+      name: fullName,
+    });
+    await this.businessProfileService.update(
+      businessProfilePayload as UpdateBusinessProfileDto,
+      user.id,
+    );
+    return {
+      isUpdate: true,
+    };
   }
 }
