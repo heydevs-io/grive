@@ -1,6 +1,6 @@
 import { CurrentUser, CustomApiResponse } from '@decorators';
 import { User } from '@entities';
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards';
 import { UserService } from './user.service';

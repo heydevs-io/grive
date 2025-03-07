@@ -9,3 +9,9 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 }
+
+export class UpdateUserDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+}

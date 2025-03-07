@@ -1,6 +1,7 @@
 import { BusinessFocus, BusinessType } from '@enums';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsNotEmpty,
@@ -147,4 +148,90 @@ export class UpdateBusinessProfileDto {
     isArray: true,
   })
   focus: BusinessFocus[];
+}
+
+export class UpdateProfileDto {
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({
+    example: 'John Doe',
+  })
+  fullName?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({
+    example: 'Business Name',
+  })
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({
+    example: 'https://www.business.com',
+  })
+  website?: string;
+
+  @IsOptional()
+  @IsDateString()
+  @ApiProperty({
+    example: '2023-01',
+  })
+  foundedDate?: Date;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    example: '<$3000',
+  })
+  monthlyRevenueAvg?: string;
+
+  @IsOptional()
+  @IsEnum(BusinessType)
+  @ApiProperty({
+    enum: BusinessType,
+    example: BusinessType.SERVICE,
+  })
+  businessType: BusinessType;
+
+  @IsString()
+  @ApiProperty({
+    example: 'Other business type',
+  })
+  @ValidateIf((object, value) => object.businessType === BusinessType.OTHER)
+  businessTypeOther?: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    example: '700',
+  })
+  industrySIC?: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    example: 'Creative service',
+  })
+  specificService?: string;
+
+  @IsEnum(BusinessFocus, { each: true })
+  @IsOptional()
+  @ApiProperty({
+    enum: BusinessFocus,
+    example: [
+      BusinessFocus.BUSINESS_GROWTH_HEALTH,
+      BusinessFocus.FORECASTING_PLANNING,
+    ],
+    isArray: true,
+  })
+  focus?: BusinessFocus[];
+}
+
+export class UpdateResponse {
+  @IsBoolean()
+  @ApiProperty({
+    example: true,
+  })
+  isUpdated: boolean;
 }
